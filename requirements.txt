@@ -1,0 +1,10 @@
+# Project dependencies
+# Official OpenGoPro library for BLE control and COHN/COHM
+open_gopro~=0.21.2
+
+# HTTP client and toolbelt for multipart streaming (MultipartEncoder + MultipartEncoderMonitor)
+requests~=2.32.5
+requests-toolbelt~=1.0.0
+
+# Retry logic utilities
+tenacity~=9.1.2
