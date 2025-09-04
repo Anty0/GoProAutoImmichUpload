@@ -6,16 +6,18 @@ import requests
 import os
 from datetime import datetime
 
-API_KEY = 'YOUR_API_KEY'                # replace with a valid api key
-BASE_URL = 'http://127.0.0.1:2283/api'  # replace as needed
+from gopro_immich_uploader.config import Config
+from gopro_immich_uploader.logger import get_logger
+
+log = get_logger(__name__)
 
 
-def upload(file):
+def upload(file: str, cfg: Config):
     stats = os.stat(file)
 
     headers = {
         'Accept': 'application/json',
-        'x-api-key': API_KEY
+        'x-api-key': cfg.immich_api_key
     }
 
     data = {
@@ -31,7 +33,12 @@ def upload(file):
     }
 
     response = requests.post(
-        f'{BASE_URL}/assets', headers=headers, data=data, files=files)
+        f'{cfg.immich_server_url}/assets', headers=headers, data=data, files=files)
 
-    print(response.json())
+    try:
+        resp = response.json()
+    except Exception:
+        log.error("Failed to parse response: %s", response.text)
+        raise
+    log.info("Uploaded asset: %s", resp)
     # {'id': 'ef96f635-61c7-4639-9e60-61a11c4bbfba', 'duplicate': False}

@@ -23,8 +23,27 @@ I wanna be lazy. Downloading footage to my PC to upload to Immich was too much w
 docker run --rm --name gopro-immich-uploader \
   -e IMMICH_API_KEY=your-api-key \
   -e IMMICH_SERVER_URL=https://yourimmich.example.com/api \
+  -e WIFI_SSID=YourHomeWifi \
+  -e WIFI_PASSWORD=YourWifiPassword \
+  -e DELETE_AFTER_UPLOAD=true \
+  -e SCAN_INTERVAL_SEC=30 \
+  -e BLE_ADAPTER=hci0 \
+  -e CAMERA_POWER_OFF=true \
+  -e LOG_LEVEL=INFO \
   -v /run/dbus:/run/dbus:ro
 ```
+
+### Environment variables
+
+- `IMMICH_SERVER_URL`: Immich API base URL, e.g., https://immich.example.com/api (default: http://127.0.0.1:2283/api)
+- `IMMICH_API_KEY`: Immich API key (required)
+- `WIFI_SSID`: Home Wi-Fi SSID (required)
+- `WIFI_PASSWORD`: Home Wi-Fi password (required)
+- `DELETE_AFTER_UPLOAD`: Delete media on camera after successful upload (true/false, default false)
+- `SCAN_INTERVAL_SEC`: Scan interval in seconds for BLE scanning (int > 0, default 30)
+- `BLE_ADAPTER`: Name of BLE adapter (default hci0)
+- `CAMERA_POWER_OFF`: Power off camera after uploads complete (true/false, default false)
+- `LOG_LEVEL`: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL; default INFO)
 
 ## Development setup
 
