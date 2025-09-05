@@ -13,7 +13,6 @@ class Config:
 
     delete_after_upload: bool = environ.bool_var(default=False)
     scan_interval_sec: int = environ.int_var(default=30)
-    ble_adapter: str = environ.var(default="hci0")
     camera_power_off: bool = environ.bool_var(default=False)
 
     log_level: int = environ.var(
