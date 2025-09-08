@@ -26,6 +26,6 @@ async def loop_main(cfg: Config) -> None:
                 if cfg.camera_power_off and failed_count == 0:
                     await camera_ble.ble_command.power_down()
         except Exception as e:
-            log.error("No camera found: %s", e)
+            log.exception("Error in main loop: %s", e)
         finally:
             await asyncio.sleep(cfg.scan_interval_sec)
