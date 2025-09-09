@@ -17,7 +17,7 @@ I wanna be lazy. Downloading footage to my PC to upload to Immich was too much w
 ## How?
 
 - Use a Linux machine with Docker and BlueZ installed.
-- Ensure your Linux machine is paired with your GoPro, which you can do using the `bluetoothctl` command.
+- Ensure your Linux machine is paired with your GoPro, which you can do using the `bluetoothctl` command. See [Pairing with GoPro](#pairing-with-gopro).
 - Launch the service with this command:
 ```sh
 docker run --rm --name gopro-immich-uploader \
@@ -42,6 +42,19 @@ docker run --rm --name gopro-immich-uploader \
 - `SCAN_INTERVAL_SEC`: Scan interval in seconds for BLE scanning (int > 0, default 30)
 - `CAMERA_POWER_OFF`: Power off camera after uploads complete (true/false, default false)
 - `LOG_LEVEL`: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL; default INFO)
+
+## Pairing with GoPro
+
+```sh
+bluetoothctl
+[bluetooth]# power on
+[bluetooth]# scan le
+[bluetooth]# devices
+# Find your GoPro in the list
+[bluetooth]# pair <GoPro MAC address>
+# Repeat the last command until you see "Pairing successful"
+[bluetooth]# quit
+```
 
 ## Development setup
 
