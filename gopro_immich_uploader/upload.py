@@ -12,6 +12,6 @@ log = get_logger(__name__)
 
 
 async def upload_media(cfg: Config, camera: WirelessGoPro) -> tuple[int, int]:
-    async def handle_file(file: MediaItem, stream: Iterator[bytes]):
-        await upload_file(cfg, file, stream)
+    async def handle_file(file: MediaItem, stream: Iterator[bytes], size: int):
+        await upload_file(cfg, file, stream, size)
     return await download_files(cfg, camera, handle_file)

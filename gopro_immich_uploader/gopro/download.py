@@ -12,8 +12,10 @@ log = get_logger(__name__)
 async def download_files(
         cfg: Config,
         camera: WirelessGoPro,
-        handle_file: Callable[[MediaItem, Iterator[bytes]],
-        Coroutine[None, None, None]]
+        handle_file: Callable[
+            [MediaItem, Iterator[bytes], int],
+            Coroutine[None, None, None]
+        ]
 ) -> tuple[int, int]:
     total_count = 0
     error_count = 0
@@ -25,10 +27,10 @@ async def download_files(
         total_count = len(files)
 
         for file in files:
-            async def stream_callback(stream: Iterator[bytes]):
+            async def stream_callback(stream: Iterator[bytes], size: int):
                 nonlocal error_count
                 try:
-                    await handle_file(file, stream)
+                    await handle_file(file, stream, size)
                 except Exception as e:
                     error_count += 1
                     log.error(f"Error handling file {file.filename}: {e}")
