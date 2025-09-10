@@ -1,4 +1,4 @@
-import urllib.parse
+import asyncio
 from typing import Iterator, Callable, Coroutine
 
 from open_gopro import WirelessGoPro
@@ -45,6 +45,7 @@ async def download_files(
                 await camera.http_command.download_file(camera_file=file.filename, local_file=stream_callback)
 
                 if cfg.delete_after_upload:
+                    await asyncio.sleep(1)  # Give time for camera to realize the file is no longer in use
                     await camera.http_command.delete_file(path=file.filename)
 
                 done_count += 1

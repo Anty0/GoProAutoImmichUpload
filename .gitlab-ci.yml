@@ -46,33 +46,7 @@ build-and-push:
       fi
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
   script:
-    - |
-      set -euo pipefail
-      IMAGE="$DOCKERHUB_REPO"
-      TAGS=("$IMAGE:sha-$CI_COMMIT_SHORT_SHA")
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        TAGS+=("$IMAGE:$CI_COMMIT_TAG")
-      fi
-      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
-        TAGS+=("$IMAGE:latest")
-        # Also tag with version from VERSION file if present
-        if [ -f VERSION ]; then
-          VERSION_TAG=$(tr -d '\n' < VERSION | tr -d '\r' | xargs)
-          if [ -n "$VERSION_TAG" ]; then
-            TAGS+=("$IMAGE:$VERSION_TAG")
-          else
-            echo "WARNING: VERSION file is empty; skipping version tag." >&2
-          fi
-        else
-          echo "WARNING: VERSION file not found; skipping version tag." >&2
-        fi
-      fi
-      echo "Will push tags: ${TAGS[*]}"
-      docker build \
-        --file Dockerfile \
-        $(printf -- ' -t %q' "${TAGS[@]}") \
-        --push \
-        .
+    - ./ci/build-and-push.sh
   after_script:
     - docker logout
   artifacts:
