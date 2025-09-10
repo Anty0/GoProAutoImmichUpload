@@ -11,13 +11,9 @@
 # - sha-<shortsha> on all commits
 
 stages:
-- secret-detection
-- build
+  - secret-detection
+  - build
 
-
-services:
-- name: docker:28.4.0-dind
-  command: ["--mtu=1460"]
 
 variables:
   DOCKER_HOST: tcp://docker:2376
@@ -28,10 +24,13 @@ variables:
 secret_detection:
   stage: secret-detection
 include:
-- template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
 
 build-and-push:
   image: docker:28.4.0
+  services:
+    - name: docker:28.4.0-dind
+      command: ["--mtu=1460"]
   stage: build
   rules:
     # Run on default branch, tags, and merge requests

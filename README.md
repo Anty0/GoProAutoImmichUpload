@@ -29,7 +29,8 @@ docker run --rm --read-only --name gopro-immich-uploader \
   -e SCAN_INTERVAL_SEC=30 \
   -e CAMERA_POWER_OFF=true \
   -e LOG_LEVEL=INFO \
-  -v /run/dbus:/run/dbus:ro
+  -v /run/dbus:/run/dbus:ro \
+  docker.io/anty0/gopro-auto-immich-upload:1.0.0
 ```
 
 ### Environment variables
