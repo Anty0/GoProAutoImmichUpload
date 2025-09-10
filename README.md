@@ -1,6 +1,8 @@
 # Automatic GoPro Media Uploader for Immich
 
-Ever wondered why your feature-packed GoPro can't just connect to your own server and upload all the media automatically? Me too. Luckily, both GoPro and Immich have a convenient API. So I created this lil service to do just that. (Yee, I know there is the cloud subscription.)
+Have you ever wondered why your feature-packed GoPro can't just connect to your own server and upload all the media automatically?
+Me too. Luckily, both GoPro and Immich have a convenient API. So I created this lil service to do just that.
+(Yee, I know there is the cloud subscription.)
 
 ## What does it do?
 
@@ -8,15 +10,15 @@ Ever wondered why your feature-packed GoPro can't just connect to your own serve
 - When a camera is detected, we set it up for [COHM (Camera On the Home Network)](https://gopro.github.io/OpenGoPro/ble/features/cohn.html) and instruct it to connect to your home Wi-Fi network.
 - Once connected, the service streams media, one by one, directly from the camera to the Immich server (without storing in RAM or on disk).
 - All media confirmed to be uploaded by Immich are automatically deleted from the camera (configurable).
-- When all media are uploaded, the camera is powered off.
+- When all media are uploaded, the camera is powered off (configurable).
 
 ## Why?
 
-I wanna be lazy. Downloading footage to my PC to upload to Immich was too much work and caused too many worn-out SSD bits to get immediately deleted once uploaded.
+I wanna be lazy. Downloading footage to my PC just to upload it to Immich was too much work and caused too many worn-out SSD bits to get immediately deleted once uploaded.
 
 ## How?
 
-- Use a Linux machine with Docker and BlueZ installed.
+- Use a Linux machine with Docker (or Podman) and BlueZ installed.
 - Ensure your Linux machine is paired with your GoPro, which you can do using the `bluetoothctl` command. See [Pairing with GoPro](#pairing-with-gopro).
 - Launch the service with this command:
 ```sh
@@ -48,13 +50,13 @@ docker run --rm --read-only --name gopro-immich-uploader \
 
 ```sh
 bluetoothctl
-[bluetooth]# power on
-[bluetooth]# scan le
-[bluetooth]# devices
+[bluetoothctl]> power on
+[bluetoothctl]> scan le
+[bluetoothctl]> devices
 # Find your GoPro in the list
-[bluetooth]# pair <GoPro MAC address>
+[bluetoothctl]> pair <GoPro MAC address>
 # Repeat the last command until you see "Pairing successful"
-[bluetooth]# quit
+[bluetoothctl]> quit
 ```
 
 ## Development setup
@@ -88,7 +90,7 @@ This is not affiliated with GoPro in any way.
 
 I am not responsible for any damage caused by this project.
 Don't trust this code to take care of your precious footage.
-**Especially** if you enable the `CAMERA_POWER_OFF` option.
+**Especially** if you enable the `DELETE_AFTER_UPLOAD` option.
 If the Immich faints and your footage gets deleted anyway, you're on your own.
 
 I use this thing to automatically pull "DashCam" like footage from the camera.
@@ -111,8 +113,8 @@ work around:
   please let me know.
 - To implement streaming downloads of media, I ended up creating a custom mixin and fit it nicely between the `WirelessGoPro`
   and `GoProBase` classes. To pass the stream, I ended up abusing property used to pass the file name.
-- Since I'm ranting on libs, why not add that requests_toolbelt reports the full length of the body, while requests expect
-  only the remaining length? Had to patch up the `StreamingIterator` to fix that.
+- Since I'm ranting on libs, why not add that `requests_toolbelt` reports the full length of the body, while requests expect
+  only the remaining length? Had to patch up the `StreamingIterator` to get it to work.
 
 All of these should stand as a reason this whole thing should be rewritten from scratch using better libraries.
 But it works well enough for my needs.
