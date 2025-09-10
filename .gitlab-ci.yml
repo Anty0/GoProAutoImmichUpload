@@ -14,10 +14,9 @@ stages:
 - secret-detection
 - build
 
-image: docker:27
 
 services:
-- name: docker:27-dind
+- name: docker:28.4.0-dind
   command: ["--mtu=1460"]
 
 variables:
@@ -32,6 +31,7 @@ include:
 - template: Security/Secret-Detection.gitlab-ci.yml
 
 build-and-push:
+  image: docker:28.4.0
   stage: build
   rules:
     # Run on default branch, tags, and merge requests
@@ -39,6 +39,7 @@ build-and-push:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH'
   before_script:
+    - apk add --no-cache bash
     - |
       if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ] || [ -z "$DOCKERHUB_REPO" ]; then
         echo "ERROR: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN and DOCKERHUB_REPO variables must be set." >&2
@@ -46,7 +47,7 @@ build-and-push:
       fi
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
   script:
-    - bash ./ci/build_and_push.sh
+    - ./ci/build_and_push.sh
   after_script:
     - docker logout
   artifacts:
