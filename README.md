@@ -20,7 +20,7 @@ I wanna be lazy. Downloading footage to my PC to upload to Immich was too much w
 - Ensure your Linux machine is paired with your GoPro, which you can do using the `bluetoothctl` command. See [Pairing with GoPro](#pairing-with-gopro).
 - Launch the service with this command:
 ```sh
-docker run --rm --name gopro-immich-uploader \
+docker run --rm --read-only --name gopro-immich-uploader \
   -e IMMICH_API_KEY=your-api-key \
   -e IMMICH_SERVER_URL=https://yourimmich.example.com/api \
   -e WIFI_SSID=YourHomeWifi \

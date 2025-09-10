@@ -1,16 +1,92 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/user/application_security/secret_detection/pipeline/configure
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+# GitLab CI pipeline to build and push a Docker image to Docker Hub
+#
+# Required CI/CD variables (Settings > CI/CD > Variables):
+# - DOCKERHUB_USERNAME: your Docker Hub username
+# - DOCKERHUB_TOKEN: a Docker Hub Access Token (recommended) or password
+# - DOCKERHUB_REPO: full repository name on Docker Hub, e.g. "myuser/gopro-immich-uploader"
+#
+# Tagging strategy:
+# - latest on default branch
+# - <git tag> on tagged commits
+# - sha-<shortsha> on all commits
+
 stages:
-- test
 - secret-detection
+- build
+
+image: docker:27
+
+services:
+- name: docker:27-dind
+  command: ["--mtu=1460"]
+
 variables:
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_DRIVER: overlay2
+  # Set default platform; adjust if you configure multi-arch buildx
+  DOCKER_DEFAULT_PLATFORM: linux/amd64
   SECRET_DETECTION_ENABLED: 'true'
+
 secret_detection:
   stage: secret-detection
 include:
 - template: Security/Secret-Detection.gitlab-ci.yml
+
+build-and-push:
+  stage: build
+  rules:
+    # Run on default branch, tags, and merge requests
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
+  before_script:
+    - |
+      if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ] || [ -z "$DOCKERHUB_REPO" ]; then
+        echo "ERROR: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN and DOCKERHUB_REPO variables must be set." >&2
+        exit 1
+      fi
+    - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    # Ensure buildx builder exists and is in use
+    - |
+      if ! docker buildx inspect builder >/dev/null 2>&1; then
+        docker buildx create --name builder --use
+      else
+        docker buildx use builder
+      fi
+  script:
+    - |
+      set -euo pipefail
+      IMAGE="$DOCKERHUB_REPO"
+      TAGS=("$IMAGE:sha-$CI_COMMIT_SHORT_SHA")
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        TAGS+=("$IMAGE:$CI_COMMIT_TAG")
+      fi
+      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        TAGS+=("$IMAGE:latest")
+        # Also tag with version from VERSION file if present
+        if [ -f VERSION ]; then
+          VERSION_TAG=$(tr -d '\n' < VERSION | tr -d '\r' | xargs)
+          if [ -n "$VERSION_TAG" ]; then
+            TAGS+=("$IMAGE:$VERSION_TAG")
+          else
+            echo "WARNING: VERSION file is empty; skipping version tag." >&2
+          fi
+        else
+          echo "WARNING: VERSION file not found; skipping version tag." >&2
+        fi
+      fi
+      echo "Will push tags: ${TAGS[*]}"
+      # Build and push
+      docker buildx build \
+        --platform "${DOCKER_DEFAULT_PLATFORM}" \
+        --file Dockerfile \
+        $(printf -- ' -t %q' "${TAGS[@]}") \
+        --push \
+        .
+  after_script:
+    - docker logout
+  artifacts:
+    when: on_failure
+    reports:
+      dotenv: [] # keep minimal; no artifacts saved
