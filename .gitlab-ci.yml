@@ -46,7 +46,7 @@ build-and-push:
       fi
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
   script:
-    - ./ci/build_and_push.sh
+    - bash ./ci/build_and_push.sh
   after_script:
     - docker logout
   artifacts:
