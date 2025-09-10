@@ -14,9 +14,14 @@ class Config:
     scan_interval_sec: int = environ.var(
         default=30,
         converter=int,
-        validator=lambda v: v > 0,
+        validator=lambda self, attribute, value: value > 0,
     )
     camera_power_off: bool = environ.bool_var(default=False)
+    min_battery_level: int = environ.var(
+        default=20,
+        converter=int,
+        validator=lambda self, attribute, value: 0 <= value <= 100,
+    )
 
     log_level: int = environ.var(
         default="INFO",

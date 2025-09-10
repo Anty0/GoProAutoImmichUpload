@@ -1,5 +1,6 @@
 from typing import Iterator, Any
 import mimetypes
+from datetime import datetime
 
 import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
@@ -8,6 +9,7 @@ from requests_toolbelt.streaming_iterator import StreamingIterator
 from open_gopro.models import MediaItem
 
 from gopro_immich_uploader.config import Config
+from gopro_immich_uploader.immich.streaming_iterator_fixed import StreamingIteratorFixed
 from gopro_immich_uploader.logger import get_logger
 
 log = get_logger(__name__)
@@ -19,12 +21,13 @@ async def upload_file(cfg: Config, file: MediaItem, stream: Iterator[bytes], siz
     The data is read progressively from the provided `stream` iterator and sent
     as multipart/form-data using requests_toolbelt's MultipartEncoder.
     """
-    device_asset_id = f"{file.filename}-{file.creation_timestamp}" # TODO: convert creation_timestamp to fload or int
+    device_asset_id = f"-{file.filename}-{file.creation_timestamp}"
+    creating_at = str(datetime.fromtimestamp(int(file.creation_timestamp)))
     data_fields = {
         'deviceAssetId': str(device_asset_id),
-        'deviceId': 'python',
-        'fileCreatedAt': file.creation_timestamp,  # FIXME: check compatibility of creation_timestamp with datetime.fromtimestamp
-        'fileModifiedAt': file.creation_timestamp,
+        'deviceId': 'gopro',
+        'fileCreatedAt': creating_at,
+        'fileModifiedAt': creating_at,
         'isFavorite': 'false',
     }
 
@@ -32,7 +35,7 @@ async def upload_file(cfg: Config, file: MediaItem, stream: Iterator[bytes], siz
     if not content_type:
         content_type = 'application/octet-stream'
 
-    streaming_file = StreamingIterator(size, stream)
+    streaming_file = StreamingIteratorFixed(size, stream)
 
     # Build the multipart encoder with both text fields and the streaming file
     fields: list[tuple[str, Any]] = [(k, v) for k, v in data_fields.items()]
@@ -48,6 +51,7 @@ async def upload_file(cfg: Config, file: MediaItem, stream: Iterator[bytes], siz
 
     url = f"{cfg.immich_server_url}/assets"
     response = requests.post(url, headers=headers, data=encoder)
+    response.raise_for_status()
 
     try:
         resp = response.json()

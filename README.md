@@ -65,5 +65,53 @@ pip install -r requirements.txt
 ```
 - Run the service:
 ```sh
+export IMMICH_API_KEY=your-api-key
+export IMMICH_SERVER_URL=https://yourimmich.example.com/api
+export WIFI_SSID=YourHomeWifi
+export WIFI_PASSWORD=YourWifiPassword
+export DELETE_AFTER_UPLOAD=true
+export SCAN_INTERVAL_SEC=30
+export CAMERA_POWER_OFF=true
+export LOG_LEVEL=INFO
 python -m gopro_immich_uploader
 ```
+
+## Limitations
+
+- Only raw media are uploaded, all other files and metadata are ignored.
+- Tested only on Linux with GoPro 13
+
+## Disclaimer
+
+This is not affiliated with GoPro in any way.
+
+I am not responsible for any damage caused by this project.
+Don't trust this code to take care of your precious footage.
+**Especially** if you enable the `CAMERA_POWER_OFF` option.
+If the Immich faints and your footage gets deleted anyway, you're on your own.
+
+I use this thing to automatically pull "DashCam" like footage from the camera.
+I won't notice if a video disappears from time to time, but you might.
+
+While OpenGoPro is a great resource for implementing your own GoPro library, I've quickly
+found out that it is awful when used as a library itself. Examples of things I had to
+work around:
+- Even though I don't use the AP mode - I don't need the library to touch Wi-Fi (my server doesn't even have one), the
+  library tries to play around with nmcli and ends up asking for a sudo password. Solved by implementing a no-op version of the Wi-Fi controller.
+- OpenGoPro stores COHN configuration in a file on disk. Since I want this app to run in a read-only docker container, I don't want
+  it to write into any files—I'd much rather prefer just to get this config as a dict and pass it when initializing the COHN instance.
+  Solved by overriding default storage backend of the `tinydb` to store the database in memory.
+- The library tries to check if the camera is paired, but fails miserably on my machine, because the prompt of the `bluetoothctl`
+  command does not contain `#`. Actually, all of these "let's run a command and parse its output" things are just minefield waiting to explode.
+- I didn't find a way to detect whether the camera is powered on or not using the library and avoid waking it up by connecting to it.
+  Ended up overriding ble controller to hook when the library tries to connect to read random BLE advertisements to figure out
+  whether the camera is powered on or not from an undocumented flag bit. I still believe there is something wrong with that code.
+  All the manufacturer data I'm getting does not make any sense. If you are still reading this, and you can find what's wrong,
+  please let me know.
+- To implement streaming downloads of media, I ended up creating a custom mixin and fit it nicely between the `WirelessGoPro`
+  and `GoProBase` classes. To pass the stream, I ended up abusing property used to pass the file name.
+- Since I'm ranting on libs, why not add that requests_toolbelt reports the full length of the body, while requests expect
+  only the remaining length? Had to patch up the `StreamingIterator` to fix that.
+
+All of these should stand as a reason this whole thing should be rewritten from scratch using better libraries.
+But it works well enough for my needs.

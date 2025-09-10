@@ -3,7 +3,9 @@ from open_gopro.models.general import CohnInfo
 from open_gopro.models.proto import EnumCOHNNetworkState
 
 from gopro_immich_uploader.config import Config
+from gopro_immich_uploader.gopro.ble_controller_no_pair import BLEControllerNoPair
 from gopro_immich_uploader.gopro.streamin_download import StreamingWirelessGoPro
+from gopro_immich_uploader.gopro.wifi_controller_stub import WifiControllerStub
 from gopro_immich_uploader.logger import get_logger
 
 log = get_logger(__name__)
@@ -11,12 +13,16 @@ log = get_logger(__name__)
 
 def ble_camera(cfg: Config) -> WirelessGoPro:
     return StreamingWirelessGoPro(
+        wifi_adapter=WifiControllerStub,
+        ble_adapter=BLEControllerNoPair,
         interfaces={WirelessGoPro.Interface.BLE},
     )
 
 
 def cohn_camera(cfg: Config, identifier: str = None) -> WirelessGoPro:
     return StreamingWirelessGoPro(
+        wifi_adapter=WifiControllerStub,
+        ble_adapter=BLEControllerNoPair,
         interfaces={WirelessGoPro.Interface.COHN},
         target=identifier,
     )

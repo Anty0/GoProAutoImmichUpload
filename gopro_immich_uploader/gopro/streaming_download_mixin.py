@@ -13,9 +13,8 @@ from gopro_immich_uploader.logger import get_logger
 log = get_logger(__name__)
 
 
-class GoProStramingDownloadMixin(GoProBase):
+class GoProStreamingDownloadMixin(GoProBase):
 
-    @enforce_message_rules
     async def _get_stream(
         self,
         message: HttpMessage,
@@ -25,10 +24,11 @@ class GoProStramingDownloadMixin(GoProBase):
         **kwargs: Any,
     ) -> GoProResp:
         url = self._base_url + message.build_url(path=kwargs["camera_file"])
+        # We abuse existing local_file kwarg to pass in callback
         callback: Callable[
             [Iterator[bytes], int],
             Coroutine[None, None, None]
-        ] = kwargs["stream_callback"]
+        ] = kwargs["local_file"]
         log.debug(f"Sending:  {url}")
         with self._requests_session.get(
             url,
@@ -38,5 +38,5 @@ class GoProStramingDownloadMixin(GoProBase):
         ) as request:
             request.raise_for_status()
             content_length = int(request.headers["Content-Length"])
-            await callback(request.iter_content(chunk_size=8192), content_length)
+            await callback(request.iter_content(chunk_size=1_048_576), content_length)
         return GoProResp(protocol=GoProResp.Protocol.HTTP, status=ErrorCode.SUCCESS, data=request, identifier=url)
