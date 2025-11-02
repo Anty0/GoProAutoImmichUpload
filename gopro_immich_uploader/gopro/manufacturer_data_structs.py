@@ -1,12 +1,11 @@
-
 from construct import (
     BitStruct,
     Byte,
     Bytes,
     Flag,
-    Padding,
     Struct,
 )
+from open_gopro.models.network_scan_responses import camera_capability_struct, media_offload_status_struct
 
 camera_status_struct = BitStruct(
     "processor_state" / Flag,
@@ -17,27 +16,6 @@ camera_status_struct = BitStruct(
     "reserved01" / Flag,
     "reserved02" / Flag,
     "reserved03" / Flag,
-)
-
-
-camera_capability_struct = BitStruct(
-    "cnc" / Flag,
-    "ble_metadata" / Flag,
-    "wideband_audio" / Flag,
-    "concurrent_master_slave" / Flag,
-    "onboarding" / Flag,
-    "new_media_available" / Flag,
-    "reserved" / Padding(10),
-)
-
-media_offload_status_struct = BitStruct(
-    "available" / Flag,
-    "new_media_available" / Flag,
-    "battery_ok" / Flag,
-    "sd_card_ok" / Flag,
-    "busy" / Flag,
-    "paused" / Flag,
-    "reserved" / Padding(2),
 )
 
 manuf_data_struct = Struct(

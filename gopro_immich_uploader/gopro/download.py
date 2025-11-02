@@ -6,25 +6,39 @@ from open_gopro.models import MediaItem
 from open_gopro.models.constants import Toggle
 
 from gopro_immich_uploader.exit_handler import should_exit
-from gopro_immich_uploader.config import Config
+from gopro_immich_uploader.config import ServiceConfig
 from gopro_immich_uploader.logger import get_logger
 from gopro_immich_uploader.progress_reporting_iterator import ProgressReportingIterator
 
 log = get_logger(__name__)
 
 
+async def delete_file(camera: WirelessGoPro, file: MediaItem):
+    # Retry delete up to 10 times (GoPro delete endpoint is unreliable)
+    max_retries = 10
+    for attempt in range(1, max_retries + 1):
+        try:
+            # Give time for the camera to realize the file is no longer in use,
+            # no idea if it really helps
+            await asyncio.sleep(1)
+            response = await camera.http_command.delete_file(path=file.filename)
+            if response.ok:
+                break
+        except Exception as e:
+            log.exception(f"Delete attempt %d/%d for %s threw exception: %s", attempt, max_retries, file.filename, e, exc_info=e)
+        log.warning("Delete attempt %d/%d for %s failed", attempt, max_retries, file.filename)
+
+
 async def download_files(
-        cfg: Config,
+        cfg: ServiceConfig,
         camera: WirelessGoPro,
         handle_file: Callable[
             [MediaItem, Iterator[bytes], int],
             Coroutine[None, None, None]
         ]
 ) -> tuple[int, int]:
-    total_count = -1
-    done_count = 0
-
     try:
+        done_count = 0
         await camera.http_command.set_turbo_mode(mode=Toggle.ENABLE)
 
         files = (await camera.http_command.get_media_list()).data.files
@@ -45,8 +59,7 @@ async def download_files(
                 await camera.http_command.download_file(camera_file=file.filename, local_file=stream_callback)
 
                 if cfg.delete_after_upload:
-                    await asyncio.sleep(1)  # Give time for camera to realize the file is no longer in use
-                    await camera.http_command.delete_file(path=file.filename)
+                    await delete_file(camera, file)
 
                 done_count += 1
             except Exception as e:

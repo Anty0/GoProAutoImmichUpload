@@ -15,5 +15,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Default command: run the module entrypoint
-CMD ["python", "-m", "gopro_immich_uploader"]
+ENTRYPOINT ["/usr/local/bin/python", "-m", "gopro_immich_uploader"]
+CMD ["run"]

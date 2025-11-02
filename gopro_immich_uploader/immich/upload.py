@@ -4,18 +4,17 @@ from datetime import datetime
 
 import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
-from requests_toolbelt.streaming_iterator import StreamingIterator
 
 from open_gopro.models import MediaItem
 
-from gopro_immich_uploader.config import Config
+from gopro_immich_uploader.config import ServiceConfig
 from gopro_immich_uploader.immich.streaming_iterator_fixed import StreamingIteratorFixed
 from gopro_immich_uploader.logger import get_logger
 
 log = get_logger(__name__)
 
 
-async def upload_file(cfg: Config, file: MediaItem, stream: Iterator[bytes], size: int):
+async def upload_file(cfg: ServiceConfig, file: MediaItem, stream: Iterator[bytes], size: int):
     """Stream-upload a GoPro media file to Immich without storing it locally.
 
     The data is read progressively from the provided `stream` iterator and sent
@@ -55,8 +54,8 @@ async def upload_file(cfg: Config, file: MediaItem, stream: Iterator[bytes], siz
 
     try:
         resp = response.json()
-    except Exception:
-        log.error("Failed to parse response: %s", response.text)
+    except Exception as e:
+        log.error("Failed to parse response: %s", response.text, exc_info=e)
         raise
-    log.info("Uploaded asset: %s", resp)
+    log.warning("Uploaded asset: %s", resp)
     # Example: {'id': 'ef96f635-61c7-4639-9e60-61a11c4bbfba', 'duplicate': False}

@@ -9,5 +9,6 @@ requests-toolbelt~=1.0.0
 # Retry logic utilities
 tenacity~=9.1.2
 
-# Configuration with env variables
-environ-config~=24.1.0
+# Configuration with Pydantic and environment variables
+pydantic~=2.12.3
+pydantic-argparse~=0.10.0

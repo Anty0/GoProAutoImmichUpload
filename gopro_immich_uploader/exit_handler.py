@@ -6,8 +6,8 @@ SHOULD_EXIT = False
 
 
 def exit_handler():
-    log.info("Caught SIGINT. Exiting... (running uploads will finish)")
-    log.info("Press Ctrl+C again to force exit")
+    log.error("Caught SIGINT. Exiting... (running uploads will finish)")
+    log.error("Press Ctrl+C again to force exit")
     if SHOULD_EXIT:
         raise KeyboardInterrupt()
     on_exit()

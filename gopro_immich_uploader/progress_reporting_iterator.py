@@ -29,5 +29,5 @@ class ProgressReportingIterator(Iterator[bytes]):
                 self.last_report = now
             return chunk
         except StopIteration:
-            log.info("%s: 100%% (%d/%d)", self.name, self.read_so_far, self.size)
+            log.info("%s: 100%% (%d/%d) - Done", self.name, self.read_so_far, self.size)
             raise
