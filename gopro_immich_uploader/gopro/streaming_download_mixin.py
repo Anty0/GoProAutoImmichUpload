@@ -1,11 +1,12 @@
-from typing import Any, Callable, Coroutine, Iterator
+from collections.abc import Callable, Coroutine, Iterator
+from typing import Any, override
 
-from open_gopro.gopro_base import GoProBase, enforce_message_rules
 from open_gopro.domain.communicator_interface import (
     HttpMessage,
     MessageRules,
 )
-from open_gopro.models import GoProResp, MediaItem
+from open_gopro.gopro_base import GoProBase
+from open_gopro.models import GoProResp
 from open_gopro.models.constants import ErrorCode
 
 from gopro_immich_uploader.logger import get_logger
@@ -13,22 +14,20 @@ from gopro_immich_uploader.logger import get_logger
 log = get_logger(__name__)
 
 
+# noinspection PyAbstractClass
 class GoProStreamingDownloadMixin(GoProBase):
-
+    @override
     async def _get_stream(
         self,
         message: HttpMessage,
         *,
         timeout: int = GoProBase.HTTP_TIMEOUT,
-        rules: MessageRules = MessageRules(),
+        rules: MessageRules = MessageRules(),  # noqa: B008
         **kwargs: Any,
     ) -> GoProResp:
         url = self._base_url + message.build_url(path=kwargs["camera_file"])
         # We abuse existing local_file kwarg to pass in callback
-        callback: Callable[
-            [Iterator[bytes], int],
-            Coroutine[None, None, None]
-        ] = kwargs["local_file"]
+        callback: Callable[[Iterator[bytes], int], Coroutine[None, None, None]] = kwargs["local_file"]
         log.debug(f"Sending:  {url}")
         with self._requests_session.get(
             url,

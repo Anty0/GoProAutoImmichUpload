@@ -5,7 +5,7 @@ log = get_logger(__name__)
 SHOULD_EXIT = False
 
 
-def exit_handler(signame):
+def exit_handler(signame: str) -> None:
     log.error(f"Caught {signame}. Exiting... (running uploads will finish)")
     log.error("Press Ctrl+C again to force exit")
     if SHOULD_EXIT:
@@ -13,8 +13,8 @@ def exit_handler(signame):
     on_exit()
 
 
-def on_exit():
-    global SHOULD_EXIT
+def on_exit() -> None:
+    global SHOULD_EXIT  # noqa: PLW0603
     SHOULD_EXIT = True
 
 

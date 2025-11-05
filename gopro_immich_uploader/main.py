@@ -1,25 +1,21 @@
-import signal
 import asyncio
+import signal
 
 from pydantic_argparse import ArgumentParser
 
-from gopro_immich_uploader.exit_handler import exit_handler
-from gopro_immich_uploader.tinydb import GlobalMemoryStorage
-from gopro_immich_uploader.logger import configure_logging, get_logger
 from gopro_immich_uploader.config import AppConfig
+from gopro_immich_uploader.exit_handler import exit_handler
+from gopro_immich_uploader.logger import configure_logging
 from gopro_immich_uploader.service import service
 from gopro_immich_uploader.setup import setup
+from gopro_immich_uploader.tinydb import GlobalMemoryStorage
 
 
-def main():
+def main() -> None:
     init()
 
     # noinspection PyTypeChecker
-    parser = ArgumentParser(
-        model=AppConfig,
-        prog="gopro-immich-uploader",
-        description="GoPro Auto Immich Uploader"
-    )
+    parser = ArgumentParser(model=AppConfig, prog="gopro-immich-uploader", description="GoPro Auto Immich Uploader")
     cfg: AppConfig = parser.parse_typed_args()
 
     if cfg.setup:
@@ -30,7 +26,7 @@ def main():
         asyncio.run(service(cfg.run))
 
 
-def init():
+def init() -> None:
     # Register the signal handler for SIGINT and SIGTERM
     asyncio.get_event_loop().add_signal_handler(signal.SIGINT, exit_handler, "SIGINT")
     asyncio.get_event_loop().add_signal_handler(signal.SIGTERM, exit_handler, "SIGTERM")
@@ -41,5 +37,5 @@ def init():
     GlobalMemoryStorage.set_as_default()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

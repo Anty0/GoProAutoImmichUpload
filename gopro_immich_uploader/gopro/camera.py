@@ -16,7 +16,7 @@ def ble_camera() -> WirelessGoPro:
     )
 
 
-def cohn_camera(identifier: str = None) -> WirelessGoPro:
+def cohn_camera(identifier: str | None = None) -> WirelessGoPro:
     return StreamingWirelessGoPro(
         wifi_adapter=WifiControllerStub,
         ble_adapter=BLEController,

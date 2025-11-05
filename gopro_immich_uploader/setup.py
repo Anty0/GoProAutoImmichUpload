@@ -1,7 +1,7 @@
 from open_gopro.models.constants import Toggle
 
 from gopro_immich_uploader.config import SetupConfig
-from gopro_immich_uploader.gopro import ble_camera, BLEController
+from gopro_immich_uploader.gopro import BLEController, ble_camera
 from gopro_immich_uploader.logger import get_logger
 from gopro_immich_uploader.tinydb.storage import GlobalMemoryStorage
 

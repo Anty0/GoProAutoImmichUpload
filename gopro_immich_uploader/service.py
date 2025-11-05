@@ -5,10 +5,10 @@ from open_gopro.domain.communicator_interface import HttpMessage, MessageRules
 from open_gopro.models.constants import StatusId, Toggle
 from requests import ConnectTimeout
 
-from gopro_immich_uploader.exit_handler import should_exit
-from gopro_immich_uploader.logger import get_logger
 from gopro_immich_uploader.config import ServiceConfig
+from gopro_immich_uploader.exit_handler import should_exit
 from gopro_immich_uploader.gopro import cohn_camera
+from gopro_immich_uploader.logger import get_logger
 from gopro_immich_uploader.tinydb import GlobalMemoryStorage
 from gopro_immich_uploader.upload import upload_media
 
@@ -46,26 +46,26 @@ async def loop_main(cfg: ServiceConfig) -> None:
 
                 if cfg.camera_sleep and failed_count == 0:
                     await camera_sleep(camera_cohn)
-        except InitialConnectionFailed:
+        except InitialConnectionError:
             continue
         except LowBatteryError:
             continue
         except Exception as e:
             log.exception("Error in main loop: %s", e, exc_info=e)
-        finally:
-            if should_exit():
-                break
-            log.info("Waiting %ss before next scan", cfg.scan_interval_sec)
-            await asyncio.sleep(cfg.scan_interval_sec)
+
+        if should_exit():
+            break
+        log.info("Waiting %ss before next scan", cfg.scan_interval_sec)
+        await asyncio.sleep(cfg.scan_interval_sec)
 
 
 async def test_connection(camera: WirelessGoPro) -> None:
     try:
         response = await camera.http_command.set_keep_alive()
     except ConnectTimeout as e:
-        raise InitialConnectionFailed() from e
+        raise InitialConnectionError() from e
     if not response.ok:
-        raise InitialConnectionFailed()
+        raise InitialConnectionError()
 
 
 async def camera_sleep(camera_cohn: WirelessGoPro) -> None:
@@ -76,6 +76,7 @@ async def camera_sleep(camera_cohn: WirelessGoPro) -> None:
     so we use the low-level `_get_json` method to invoke it directly.
     """
     message = HttpMessage(endpoint="gp/gpControl/command/system/sleep", identifier=None)
+    # noinspection PyProtectedMember
     await camera_cohn._get_json(message, rules=MessageRules(fastpass_analyzer=MessageRules.always_true))
 
 
@@ -93,5 +94,5 @@ class LowBatteryError(Exception):
     pass
 
 
-class InitialConnectionFailed(Exception):
+class InitialConnectionError(Exception):
     pass

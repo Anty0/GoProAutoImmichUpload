@@ -1,39 +1,39 @@
 import base64
 import json
-from typing import Any, Dict, Optional
+from typing import Any, override
 
 from tinydb import TinyDB
 from tinydb.storages import Storage
 
+MEMORY: dict[str, dict[str, Any]] | None = None
 
-MEMORY: Optional[Dict[str, Dict[str, Any]]] = None
 
 class GlobalMemoryStorage(Storage):
     """
     Store the data as JSON in memory as a global variable.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):  # noqa: ARG002
         super().__init__()
 
-    def read(self) -> Optional[Dict[str, Dict[str, Any]]]:
-        global MEMORY
+    @override
+    def read(self) -> dict[str, dict[str, Any]] | None:
         return MEMORY
 
-    def write(self, data: Dict[str, Dict[str, Any]]):
-        global MEMORY
+    @override
+    def write(self, data: dict[str, dict[str, Any]]) -> None:
+        global MEMORY  # noqa: PLW0603
         MEMORY = data
 
     @staticmethod
-    def set_as_default():
+    def set_as_default() -> None:
         """
         Set the global memory storage as the default storage.
         """
-        TinyDB.default_storage_class = GlobalMemoryStorage
+        TinyDB.default_storage_class = GlobalMemoryStorage  # type: ignore
 
     @staticmethod
     def serialize() -> str:
-        global MEMORY
         if MEMORY is None:
             return ""
         json_str = json.dumps(MEMORY)
@@ -41,7 +41,7 @@ class GlobalMemoryStorage(Storage):
 
     @staticmethod
     def restore(credentials: str) -> None:
-        global MEMORY
+        global MEMORY  # noqa: PLW0603
         if not credentials:
             MEMORY = None
             return
