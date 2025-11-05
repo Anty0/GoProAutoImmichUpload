@@ -95,6 +95,19 @@ Install Python dependencies:
 ```sh
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
+
+Check code (format, lint, type check, etc.):
+```sh
+# Format code
+ruff format .
+
+# Lint
+ruff check --fix .
+
+# Type check
+mypy gopro_immich_uploader
 ```
 
 Run the setup command:

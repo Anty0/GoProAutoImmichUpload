@@ -1,0 +1,7 @@
+# Development dependencies for linting, formatting, and type checking
+
+ruff~=0.14.3
+mypy~=1.18.2
+
+# NOTE: Version mismatch - 2.32.5 not yet available
+types-requests~=2.32.4.20250913
