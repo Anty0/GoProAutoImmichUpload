@@ -61,7 +61,7 @@ type-check:
   before_script:
     - pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
   script:
-    - mypy gopro_immich_uploader'
+    - mypy gopro_immich_uploader
 
 build-and-push:
   extends: .release-rules
