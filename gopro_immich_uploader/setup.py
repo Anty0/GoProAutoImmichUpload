@@ -1,5 +1,7 @@
+from open_gopro.models.constants import Toggle
+
 from gopro_immich_uploader.config import SetupConfig
-from gopro_immich_uploader.gopro import ble_camera, provision_cohn, BLEController
+from gopro_immich_uploader.gopro import ble_camera, BLEController
 from gopro_immich_uploader.logger import get_logger
 from gopro_immich_uploader.tinydb.storage import GlobalMemoryStorage
 
@@ -14,6 +16,10 @@ async def setup(cfg: SetupConfig) -> None:
         async with ble_camera() as camera_ble:
             log.warning("Found BLE camera: %s", camera_ble)
 
+            # Make sure camera is not in turbo mode
+            await camera_ble.ble_command.set_turbo_mode(mode=Toggle.DISABLE)
+
+            # Provision COHN
             await camera_ble.ble_command.cohn_clear_certificate()
             await camera_ble.access_point.connect(cfg.wifi_ssid, cfg.wifi_password)
             await camera_ble.cohn.configure()

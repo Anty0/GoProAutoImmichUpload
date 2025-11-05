@@ -31,8 +31,9 @@ def main():
 
 
 def init():
-    # Register the signal handler for SIGINT
-    asyncio.get_event_loop().add_signal_handler(signal.SIGINT, exit_handler)
+    # Register the signal handler for SIGINT and SIGTERM
+    asyncio.get_event_loop().add_signal_handler(signal.SIGINT, exit_handler, "SIGINT")
+    asyncio.get_event_loop().add_signal_handler(signal.SIGTERM, exit_handler, "SIGTERM")
 
     # OpenGoPro uses TinyDB as a storage backend for COHN info.
     # We need multiple instances of GoPro cameras to be able to use this COHN info, but

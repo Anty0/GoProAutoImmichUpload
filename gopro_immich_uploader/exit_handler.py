@@ -5,8 +5,8 @@ log = get_logger(__name__)
 SHOULD_EXIT = False
 
 
-def exit_handler():
-    log.error("Caught SIGINT. Exiting... (running uploads will finish)")
+def exit_handler(signame):
+    log.error(f"Caught {signame}. Exiting... (running uploads will finish)")
     log.error("Press Ctrl+C again to force exit")
     if SHOULD_EXIT:
         raise KeyboardInterrupt()

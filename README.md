@@ -71,6 +71,11 @@ docker run --rm --read-only --name gopro-immich-uploader \
 - `MIN_BATTERY_LEVEL`: Minimum battery level percentage for setup (int 0-100, default 20)
 - `LOG_LEVEL`: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL; default INFO)
 
+> [!NOTE]
+> The OpenGoPro library logs a lot of debug garbage in the INFO log level channel.
+> To separate this garbage from the actual INFO logs, the service logs most of the INFO logs as WARNING.
+> I'm sorry...
+
 ## Pairing with GoPro
 
 ```sh
