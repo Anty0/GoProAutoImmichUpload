@@ -58,12 +58,14 @@ docker run --rm --read-only --name gopro-immich-uploader \
 **For Setup:**
 - `WIFI_SSID`: Home Wi-Fi SSID (required)
 - `WIFI_PASSWORD`: Home Wi-Fi password (required)
+- `IDENTIFIER`: Camera identifier (optional)
+- `NO_PAIR`: Don't pair the camera with bluetooth adapter the server (true/false, default false)
 - `LOG_LEVEL`: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL; default INFO)
 
 **For Service:**
 - `IMMICH_SERVER_URL`: Immich API base URL, e.g., https://immich.example.com/api (default: http://127.0.0.1:2283/api)
 - `IMMICH_API_KEY`: Immich API key (required)
-- `IDENTIFIER`: Camera identifier (optional)
+- `IDENTIFIER`: Camera identifier (required)
 - `COHN_CREDENTIALS`: Base64-encoded COHN credentials from setup command (required)
 - `DELETE_AFTER_UPLOAD`: Delete media on camera after successful upload (true/false, default false)
 - `SCAN_INTERVAL_SEC`: Scan interval in seconds for checking new media (int > 0, default 30)
@@ -168,7 +170,8 @@ work around:
   whether the camera was powered on or not from an undocumented flag bit. I still believe there is something wrong with that code.
   All the manufacturer data I'm getting does not make any sense. If you are still reading this, and you can find what's wrong,
   please let me know.
-- The "delete file" endpoint on GoPro is unreliable. It fails for no apparent reason (returns non-200 status). I have yet to figure out why.
+- The "delete file" endpoint on GoPro is unreliable. It fails for no apparent reason (returns non-200 status). After many attempts,
+  I've found that disabling the turbo mode makes this endpoint work reliably again.
 - The power off and sleep http endpoints are missing from the public OpenApi spec. After asking myself "Why there is a reboot endpoint, but not a power off endpoint?"
   I figured I might as well try calling some undocumented http endpoints to see if any of them work. They did work. So now I can put the camera to sleep over http.
 - To implement streaming downloads of media, I ended up creating a custom mixin and fitting it nicely between the `WirelessGoPro`
