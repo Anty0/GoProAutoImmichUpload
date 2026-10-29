@@ -21,7 +21,7 @@ async def upload_file(cfg: ServiceConfig, file: MediaItem, stream: Iterator[byte
     as multipart/form-data using requests_toolbelt's MultipartEncoder.
     """
     device_asset_id = f"-{file.filename}-{file.creation_timestamp}"
-    creating_at = str(datetime.fromtimestamp(int(file.creation_timestamp)))
+    creating_at = datetime.fromtimestamp(int(file.creation_timestamp)).astimezone().isoformat()
     data_fields = {
         "deviceAssetId": str(device_asset_id),
         "deviceId": "gopro",
@@ -50,6 +50,8 @@ async def upload_file(cfg: ServiceConfig, file: MediaItem, stream: Iterator[byte
 
     url = f"{cfg.immich_server_url}/assets"
     response = requests.post(url, headers=headers, data=encoder)
+    if not response.ok:
+        log.error("Immich rejected %s: %s", file.filename, response.text)
     response.raise_for_status()
 
     try:
